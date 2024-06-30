@@ -1,0 +1,7 @@
+.profile-picture {
+    width: 100%;
+    max-width: 350px; /* Sesuaikan ukuran maksimum yang diinginkan */
+    height: auto;
+    object-fit: cover;
+    border-radius: 10px; /* Sesuaikan jika ingin gambar berbentuk persegi dengan sudut melengkung */
+}
