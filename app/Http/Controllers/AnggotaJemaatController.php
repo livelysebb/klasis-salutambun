@@ -93,7 +93,7 @@ class AnggotaJemaatController extends Controller
             if ($anggotaJemaat->foto) {
                 Storage::delete($anggotaJemaat->foto);
             }
-            $fotoPath = $request->file('foto')->store('anggota-jemaat/foto');
+            $fotoPath = $request->file('foto')->store('public/anggota-jemaat/foto');
             $validatedData['foto'] = $fotoPath;
         }
 
