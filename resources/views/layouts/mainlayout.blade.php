@@ -32,9 +32,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/sidis">Sidi</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/sidis">Sidi</a>
-                    </li>
                 </ul>
                 <ul class="navbar-nav mb-2 mb-lg-0">
                     @auth
