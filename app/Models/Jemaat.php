@@ -21,4 +21,9 @@ class Jemaat extends Model
     {
         return $this->hasMany(AnggotaJemaat::class);
     }
+
+    public function transaksiKeuangan()
+{
+    return $this->hasMany(TransaksiKeuangan::class);
+}
 }

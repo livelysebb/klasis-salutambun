@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AnggotaJemaat;
 use App\Models\Jemaat;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule; // Tambahkan ini untuk validasi unik
+use Illuminate\Validation\Rule; // untuk validasi unik
 use Illuminate\Support\Facades\Storage;
 
 class AnggotaJemaatController extends Controller
@@ -96,7 +96,6 @@ class AnggotaJemaatController extends Controller
             $fotoPath = $request->file('foto')->store('public/anggota-jemaat/foto');
             $validatedData['foto'] = $fotoPath;
         }
-
 
         $anggotaJemaat->update($validatedData);
 
