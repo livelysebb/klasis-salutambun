@@ -9,6 +9,7 @@ use App\Http\Controllers\SidiController;
 use App\Http\Controllers\NikahController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TransaksiKeuanganController;
+use App\Http\Controllers\SuratController;
 Route::get('/', function () {
     return view('login.login');
 })->middleware('guest');
@@ -25,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('sidis', SidiController::class);
     Route::resource('nikahs', NikahController::class);
     Route::resource('transaksi_keuangans', TransaksiKeuanganController::class);
+    Route::resource('surats', SuratController::class);
 });
 
 
