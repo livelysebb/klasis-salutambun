@@ -6,6 +6,7 @@ use App\Models\TransaksiKeuangan;
 use Illuminate\Http\Request;
 use App\Models\Jemaat;
 use Illuminate\Support\Facades\DB;
+use PDF;
 
 class TransaksiKeuanganController extends Controller
 {
@@ -136,4 +137,35 @@ class TransaksiKeuanganController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function test(){
+        return 'test';
+    }
+
+    public function laporanPdf(Request $request)
+        {
+        try {
+
+            $jemaatId = $request->query('jemaat_id');
+
+            $transaksiKeuangan = TransaksiKeuangan::with('jemaat')
+                ->when($jemaatId, function ($query, $jemaatId) {
+                    $query->where('jemaat_id', $jemaatId);
+                })
+                ->latest()
+                ->get(); // Ambil semua transaksi
+
+            $totalPengeluaran = $transaksiKeuangan->where('jenis_transaksi', 'pengeluaran')->sum('jumlah');
+            $totalPemasukan = $transaksiKeuangan->where('jenis_transaksi', 'pemasukan')->sum('jumlah');
+            $sisaDana = $totalPemasukan - $totalPengeluaran;
+
+            $jemaats = Jemaat::pluck('nama', 'id');
+
+            $pdf = PDF::loadView('laporan.pdf', compact('transaksiKeuangan', 'totalPengeluaran', 'totalPemasukan', 'sisaDana', 'jemaatId', 'jemaats'));
+            return $pdf->download('laporan_keuangan.pdf');
+
+            } catch (\Exception $e) {
+                dd($e); // Atau log errornya untuk debugging lebih lanjut
+            }
+        }
 }

@@ -33,7 +33,7 @@
                         <a class="nav-link" href="/sidis">Sidi</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/transaksi_keuangans">Transaksi Keuangan</a>
+                        <a class="nav-link" href="{{ route('transaksi_keuangans.index') }}">Transaksi Keuangan</a>
                     </li>
                     <!-- <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

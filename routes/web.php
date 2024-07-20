@@ -18,13 +18,13 @@ Route::get('/', function () {
 
 // Bungkus semua route yang memerlukan autentikasi dalam grup middleware 'auth'
 Route::middleware(['auth'])->group(function () {
+    Route::get('/transaksi_keuangans/laporan-pdf', [TransaksiKeuanganController::class, 'laporanPdf'])->name('transaksi_keuangans.laporan_pdf');
     Route::resource('jemaats', JemaatController::class);
     Route::resource('anggota-jemaat', AnggotaJemaatController::class);
     Route::resource('baptisans', BaptisanController::class);
     Route::resource('sidis', SidiController::class);
     Route::resource('nikahs', NikahController::class);
     Route::resource('transaksi_keuangans', TransaksiKeuanganController::class);
-
 });
 
 

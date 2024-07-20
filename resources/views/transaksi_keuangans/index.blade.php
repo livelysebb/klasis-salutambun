@@ -28,6 +28,13 @@
                     <div class="mt-3">
                         <a href="{{ route('transaksi_keuangans.create') }}" class="btn btn-primary mb-3">Tambah Transaksi Baru</a>
 
+                        <!-- <a href="{{ route('transaksi_keuangans.laporan_pdf', ['jemaat_id' => $jemaatId]) }}" class="btn btn-secondary mb-3">Unduh Laporan PDF</a> -->
+                    </div>
+
+                    <div class="mt-3">
+                        <a href="{{ route('transaksi_keuangans.create') }}" class="btn btn-primary mb-3">Tambah Transaksi Baru</a>
+                        <a href="{{ route('transaksi_keuangans.laporan_pdf', ['jemaat_id' => $jemaatId]) }}" class="btn btn-secondary mb-3">Unduh Laporan PDF</a>
+                        <!-- <a href="{{ route('transaksi_keuangans.laporan_pdf', ['jemaat_id' => $jemaatId]) }}" class="btn btn-secondary mb-3">Unduh Laporan PDF</a> -->
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="card text-white bg-danger mb-3">
