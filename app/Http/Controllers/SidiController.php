@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sidi;
+use App\Models\Jemaat;
 use App\Models\AnggotaJemaat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -16,16 +17,25 @@ class SidiController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
+        $jemaatId = $request->query('jemaat_id');
 
-        $sidis = Sidi::with('anggotaJemaat')
+        $jemaats = Jemaat::pluck('nama', 'id');
+
+        $query = Sidi::with('anggotaJemaat.jemaat') // Eager load relasi anggotaJemaat dan jemaat
             ->when($search, function ($query, $search) {
-                return $query->whereHas('anggotaJemaat', function ($q) use ($search) {
+                $query->whereHas('anggotaJemaat', function ($q) use ($search) {
                     $q->where('nama', 'like', "%{$search}%");
                 });
             })
-            ->paginate(10);
+            ->when($jemaatId, function ($query, $jemaatId) {
+                $query->whereHas('anggotaJemaat', function ($q) use ($jemaatId) {
+                    $q->where('jemaat_id', $jemaatId);
+                });
+            });
 
-    return view('sidis.index', compact('sidis', 'search'));
+        $sidis = $query->latest()->paginate(10);
+
+        return view('sidis.index', compact('sidis', 'search', 'jemaats', 'jemaatId'));
     }
 
     /**

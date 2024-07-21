@@ -19,6 +19,9 @@ class Sidi extends Model
         'foto',
         'dokumen_sidi',
     ];
+    protected $casts = [
+        'tanggal_sidi' => 'date', // Atau 'datetime' jika Anda menyimpan waktu juga
+    ];
 
     public function anggotaJemaat()
 {
