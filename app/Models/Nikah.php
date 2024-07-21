@@ -18,6 +18,9 @@ class Nikah extends Model
         'catatan_nikah',
         //'status_pernikahan'
     ];
+    protected $casts = [
+        'tanggal_nikah' => 'date', // Atau 'datetime' jika Anda menyimpan waktu juga
+    ];
 
     public function anggotaJemaat()
     {
