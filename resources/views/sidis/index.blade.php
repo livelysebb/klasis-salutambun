@@ -48,6 +48,13 @@
                             Tidak ada foto
                         @endif
                     </td>
+                    <td>
+                        @if ($sidi->dokumen_sidi)
+                            <a href="{{ asset('storage/' . $sidi->dokumen_sidi) }}" class="btn btn-sm btn-outline-secondary" download>Unduh Dokumen</a>
+                        @else
+                            Tidak ada dokumen
+                        @endif
+                    </td>
                     <td class="d-flex flex-column">
                         <a href="{{ route('sidis.edit', $sidi->id) }}" class="btn btn-sm btn-outline-primary mb-2">Edit</a>
                         <form action="{{ route('sidis.destroy', $sidi->id) }}" method="POST" style="display: inline;">

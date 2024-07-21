@@ -17,6 +17,7 @@ class Sidi extends Model
         'bacaan_sidi',
         'nomor_surat',
         'foto',
+        'dokumen_sidi',
     ];
 
     public function anggotaJemaat()

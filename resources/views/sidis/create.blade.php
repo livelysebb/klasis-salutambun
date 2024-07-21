@@ -72,6 +72,14 @@
             @enderror
         </div>
 
+        <div class="mb-3">
+            <label for="dokumen_sidi" class="form-label">Dokumen Sidi (PDF, DOC, DOCX)</label>
+            <input type="file" class="form-control-file" id="dokumen_sidi" name="dokumen_sidi">
+            @error('dokumen_sidi')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
         <button type="submit" class="btn btn-primary">Simpan</button>
     </form>
 </div>

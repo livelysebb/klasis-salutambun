@@ -69,12 +69,17 @@ class SidiController extends Controller
                 'bacaan_sidi' => 'required|string|max:255',
                 'nomor_surat' => 'nullable|string|max:255',
                 'foto' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi foto
+                'dokumen_sidi' => 'nullable|file|mimes:pdf,doc,docx|max:2048', //validasi dokumen
                 ]);
 
                 // Simpan foto jika ada
                 if ($request->hasFile('foto')) {
                     $fotoPath = $request->file('foto')->store('public/sidis/foto');
                     $validatedData['foto'] = $fotoPath;
+                }
+                if ($request->hasFile('dokumen_sidi')) {
+                    $dokumenPath = $request->file('dokumen_sidi')->store('public/sidis/dokumen');
+                    $validatedData['dokumen_sidi'] = $dokumenPath;
                 }
 
                 Sidi::create($validatedData);
@@ -119,18 +124,28 @@ class SidiController extends Controller
     public function update(Request $request, Sidi $sidi)
     {
 
-        DB::beginTransaction(); // Mulai transaksi
+            DB::beginTransaction();
 
         try {
-            // Validasi semua input, termasuk foto (jika ada)
+            // Validasi semua input, termasuk foto dan dokumen sidi
             $validatedData = $request->validate([
                 'tanggal_sidi' => 'required|date|after:anggota_jemaat.tanggal_lahir',
                 'tempat_sidi' => 'required|string|max:255',
                 'pendeta_sidi' => 'required|string|max:255',
                 'bacaan_sidi' => 'required|string|max:255',
                 'nomor_surat' => 'nullable|string|max:255',
-                'foto' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi foto
+                'foto' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'dokumen_sidi' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
             ]);
+
+            // Hapus dokumen lama jika ada dan pengguna mengunggah dokumen baru
+            if ($request->hasFile('dokumen_sidi')) {
+                if ($sidi->dokumen_sidi) {
+                    Storage::delete($sidi->dokumen_sidi);
+                }
+                $dokumenPath = $request->file('dokumen_sidi')->store('public/sidis/dokumen');
+                $validatedData['dokumen_sidi'] = $dokumenPath;
+            }
 
             // Hapus foto lama jika ada dan ada foto baru yang diunggah
             if ($request->hasFile('foto')) {
@@ -143,14 +158,17 @@ class SidiController extends Controller
 
             $sidi->update($validatedData);
 
-            DB::commit(); // Commit transaksi jika berhasil
+            DB::commit();
             return redirect()->route('sidis.index')->with('success', 'Data sidi berhasil diperbarui.');
-        } catch (Exception $e) {
-            DB::rollBack(); // Rollback transaksi jika terjadi error
+        } catch (\Exception $e) {
+            DB::rollBack();
 
-            // Hapus foto yang sudah terlanjur diupload jika terjadi error
+            // Hapus file yang sudah terlanjur diupload jika terjadi error
             if (isset($fotoPath)) {
                 Storage::delete($fotoPath);
+            }
+            if (isset($dokumenPath)) { // Tambahkan penanganan untuk dokumen
+                Storage::delete($dokumenPath);
             }
 
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -162,22 +180,27 @@ class SidiController extends Controller
      */
     public function destroy(Sidi $sidi)
     {
-        DB::beginTransaction(); // Mulai transaksi
+            DB::beginTransaction();
 
-            try {
-                // Hapus foto sebelum menghapus data Sidi
-                if ($sidi->foto) {
-                    Storage::delete($sidi->foto);
-                }
-
-                $sidi->delete();
-
-                DB::commit(); // Commit transaksi jika berhasil
-                return redirect()->route('sidis.index')->with('success', 'Data sidi berhasil dihapus.');
-            } catch (\Exception $e) {
-                DB::rollBack(); // Rollback transaksi jika terjadi error
-                return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        try {
+            // Hapus dokumen sidi sebelum menghapus data Sidi
+            if ($sidi->dokumen_sidi) {
+                Storage::disk('public')->delete($sidi->dokumen_sidi);
             }
+
+            // Hapus foto sebelum menghapus data Sidi (jika ada)
+            if ($sidi->foto) {
+                Storage::disk('public')->delete($sidi->foto);
+            }
+
+            $sidi->delete(); // Hapus data Sidi
+
+            DB::commit();
+            return redirect()->route('sidis.index')->with('success', 'Data sidi berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+    }
 
     }
 }

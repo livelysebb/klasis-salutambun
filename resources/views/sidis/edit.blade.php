@@ -69,6 +69,17 @@
             @endif
         </div>
 
+        <div class="mb-3">
+            <label for="dokumen_sidi" class="form-label">Dokumen Sidi (PDF, DOC, DOCX)</label>
+            @if ($sidi->dokumen_sidi)
+                <p>File saat ini: <a href="{{ asset('storage/' . $sidi->dokumen_sidi) }}" target="_blank">{{ $sidi->dokumen_sidi }}</a></p>
+            @endif
+            <input type="file" class="form-control-file" id="dokumen_sidi" name="dokumen_sidi">
+            @error('dokumen_sidi')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
         <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
     </form>
 </div>
