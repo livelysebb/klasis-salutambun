@@ -61,6 +61,7 @@
                                     <td>
                                         @if ($sidi->foto)
                                             <img src="{{ asset('storage/' . $sidi->foto) }}" alt="Foto Sidi" class="img-thumbnail" style="max-width: 100px;">
+                                            <!-- <img src="{{ Storage::url($sidi->foto) }}" alt="Foto Sidi" class="img-thumbnail" style="max-width: 100px;"> -->
                                         @else
                                             Tidak ada foto
                                         @endif

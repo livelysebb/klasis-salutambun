@@ -49,7 +49,7 @@ class AnggotaJemaatController extends Controller
         ]);
 
         if ($request->hasFile('foto')) {
-            $fotoPath = $request->file('foto')->store('anggota-jemaat/foto');
+            $fotoPath = $request->file('foto')->store('anggota-jemaat/foto', 'public');
             $validatedData['foto'] = $fotoPath;
         }
 

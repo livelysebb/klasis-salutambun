@@ -50,30 +50,42 @@ class NikahController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'anggota_jemaat_id' => ['required', 'exists:anggota_jemaats,id', function ($attribute, $value, $fail) {
-                if (Nikah::where('anggota_jemaat_id', $value)->exists()) {
-                    $fail('Anggota jemaat sudah menikah.');
-                }
-            }],
-            'pasangan_id' => ['required', 'exists:anggota_jemaats,id', 'different:anggota_jemaat_id', function ($attribute, $value, $fail) {
-                if (Nikah::where('anggota_jemaat_id', $value)->exists()) {
-                    $fail('Pasangan sudah menikah.');
-                }
-            }],
-            'tanggal_nikah' => 'required|date',
-            'tempat_nikah' => 'required|string',
-            'pendeta_nikah' => 'required|string',
-            'catatan_nikah' => 'nullable|string',
-        ]);
+    {// 1. Validasi Input
+            $validatedData = $request->validate([
+                'anggota_jemaat_id' => ['required', 'exists:anggota_jemaats,id', function ($attribute, $value, $fail) {
+                    if (Nikah::where('anggota_jemaat_id', $value)->exists()) {
+                        $fail('Anggota jemaat sudah menikah.');
+                    }
+                }],
+                'pasangan_id' => ['required', 'exists:anggota_jemaats,id', 'different:anggota_jemaat_id', function ($attribute, $value, $fail) {
+                    if (Nikah::where('anggota_jemaat_id', $value)->exists()) {
+                        $fail('Pasangan sudah menikah.');
+                    }
+                }],
+                'tanggal_nikah' => 'required|date',
+                'tempat_nikah' => 'required|string',
+                'pendeta_nikah' => 'required|string',
+                'catatan_nikah' => 'nullable|string',
+                'foto_nikah' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validasi foto
+                'dokumen_nikah' => 'nullable|file|mimes:pdf,doc,docx|max:2048', // Validasi dokumen
+            ]);
 
-        try {
-            Nikah::create($validatedData);
-            return redirect()->route('nikahs.index')->with('success', 'Data pernikahan berhasil ditambahkan!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
+
+
+            // 3. Simpan Data Pernikahan
+            try {
+                    // 2. Handle Upload File (Foto dan Dokumen)
+                if ($request->hasFile('foto_nikah')) {
+                    $validatedData['foto_nikah'] = $request->file('foto_nikah')->store('nikahs', 'public');
+                }
+                if ($request->hasFile('dokumen_nikah')) {
+                    $validatedData['dokumen_nikah'] = $request->file('dokumen_nikah')->store('nikahs', 'public');
+                }
+                Nikah::create($validatedData);
+                return redirect()->route('nikahs.index')->with('success', 'Data pernikahan berhasil ditambahkan!');
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            }
     }
 
     /**
@@ -109,6 +121,20 @@ class NikahController extends Controller
                 ], [
                     'pasangan_id.different' => 'Anggota jemaat dan pasangan tidak boleh sama.',
                 ]);
+
+                if ($request->hasFile('foto_nikah')) {
+                    if ($nikah->foto_nikah) {
+                        Storage::disk('public')->delete($nikah->foto_nikah);
+                    }
+                    $validatedData['foto_nikah'] = $request->file('foto_nikah')->store('nikahs', 'public');
+                }
+
+                if ($request->hasFile('dokumen_nikah')) {
+                    if ($nikah->dokumen_nikah) {
+                        Storage::disk('public')->delete($nikah->dokumen_nikah);
+                    }
+                    $validatedData['dokumen_nikah'] = $request->file('dokumen_nikah')->store('nikahs', 'public');
+                }
 
                 $nikah->update($validatedData);
                 return redirect()->route('nikahs.index')->with('success', 'Data pernikahan berhasil diperbarui!');

@@ -16,6 +16,8 @@ class Nikah extends Model
         'tempat_nikah',
         'pendeta_nikah',
         'catatan_nikah',
+        'foto_nikah',
+        'dokumen_nikah',
         //'status_pernikahan'
     ];
     protected $casts = [

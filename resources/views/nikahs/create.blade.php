@@ -11,7 +11,7 @@
                     <h1 class="card-title">Tambah Data Pernikahan</h1>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('nikahs.store') }}" method="POST">
+                    <form action="{{ route('nikahs.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="mb-3">
@@ -75,6 +75,22 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        <div class="mb-3">
+                            <label for="foto_nikah" class="form-label">Foto Nikah (Opsional)</label>
+                            <input type="file" class="form-control @error('foto_nikah') is-invalid @enderror" id="foto_nikah" name="foto_nikah">
+                            @error('foto_nikah')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="dokumen_nikah" class="form-label">Dokumen Nikah (Opsional)</label>
+                            <input type="file" class="form-control @error('dokumen_nikah') is-invalid @enderror" id="dokumen_nikah" name="dokumen_nikah">
+                            @error('dokumen_nikah')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
 
                         <button type="submit" class="btn btn-primary">Simpan</button>
                     </form>

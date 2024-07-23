@@ -66,6 +66,28 @@
                             @enderror
                         </div>
 
+                        <div class="mb-3">
+                            <label for="foto_nikah" class="form-label">Foto Nikah (Opsional)</label>
+                            @if ($nikah->foto_nikah)
+                                <p>File saat ini: <a href="{{ asset('storage/' . $nikah->foto_nikah) }}" target="_blank">{{ $nikah->foto_nikah }}</a></p>
+                            @endif
+                            <input type="file" class="form-control @error('foto_nikah') is-invalid @enderror" id="foto_nikah" name="foto_nikah">
+                            @error('foto_nikah')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="dokumen_nikah" class="form-label">Dokumen Nikah (Opsional)</label>
+                            @if ($nikah->dokumen_nikah)
+                                <p>File saat ini: <a href="{{ asset('storage/' . $nikah->dokumen_nikah) }}" target="_blank">{{ $nikah->dokumen_nikah }}</a></p>
+                            @endif
+                            <input type="file" class="form-control @error('dokumen_nikah') is-invalid @enderror" id="dokumen_nikah" name="dokumen_nikah">
+                            @error('dokumen_nikah')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                     </form>
                 </div>
