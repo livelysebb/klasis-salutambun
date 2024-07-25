@@ -12,7 +12,11 @@ class Baptisan extends Model
        // app/Models/Baptisan.php
 
     protected $fillable = [
-        'anggota_jemaat_id', 'tanggal_baptis', 'tempat_baptis', 'pendeta_baptis', 'daftar_saksi'
+        'anggota_jemaat_id', 'tanggal_baptis', 'tempat_baptis', 'pendeta_baptis', 'daftar_saksi','dokumen_baptisan',
+    ];
+
+    protected $casts = [
+        'tanggal_baptis' => 'date', // Atau 'datetime' jika Anda menyimpan waktu juga
     ];
     // protected $casts = [
     //     'tanggal_baptis' => 'datetime', // Casting manual untuk kolom tanggal_baptis

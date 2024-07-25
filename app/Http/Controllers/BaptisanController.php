@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Baptisan;
 use App\Models\AnggotaJemaat;
+use App\Models\Jemaat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
@@ -20,18 +21,26 @@ class BaptisanController extends Controller
     {
 
         $search = $request->query('search');
+        $jemaatId = $request->query('jemaat_id'); // Tambahkan variabel untuk filter jemaat
 
-    $baptisans = Baptisan::with('anggotaJemaat')
-        ->when($search, function ($query, $search) {
-            return $query->where('tempat_baptis', 'like', "%{$search}%")
-                ->orWhereHas('anggotaJemaat', function ($q) use ($search) {
-                    $q->where('nama', 'like', "%{$search}%");
+        $jemaats = Jemaat::pluck('nama', 'id'); // Ambil data jemaat untuk dropdown
+
+        $baptisans = Baptisan::with('anggotaJemaat.jemaat') // Eager load relasi anggotaJemaat dan jemaat
+            ->when($search, function ($query, $search) {
+                return $query->where('tempat_baptis', 'like', "%{$search}%")
+                    ->orWhereHas('anggotaJemaat', function ($q) use ($search) {
+                        $q->where('nama', 'like', "%{$search}%");
+                    });
+            })
+            ->when($jemaatId, function ($query, $jemaatId) { // Filter berdasarkan jemaat jika ada
+                $query->whereHas('anggotaJemaat', function ($q) use ($jemaatId) {
+                    $q->where('jemaat_id', $jemaatId);
                 });
-        })
-        ->latest()
-        ->paginate(10);
+            })
+            ->latest()
+            ->paginate(10);
 
-    $baptisans->getCollection()->transform(function ($baptisan, $key) use ($baptisans) {
+        $baptisans->getCollection()->transform(function ($baptisan, $key) use ($baptisans) {
         $tanggalBaptis = Carbon::parse($baptisan->tanggal_baptis);
         $tanggalLahir = Carbon::parse($baptisan->anggotaJemaat->tanggal_lahir);
 
@@ -50,7 +59,7 @@ class BaptisanController extends Controller
         return $baptisan;
     });
 
-    return view('baptisans.index', compact('baptisans', 'search'));
+    return view('baptisans.index', compact('baptisans', 'search','jemaats', 'jemaatId'));
     }
 
     /**
@@ -80,11 +89,17 @@ class BaptisanController extends Controller
             'tempat_baptis' => 'required|string|max:255',
             'pendeta_baptis' => 'required|string|max:255',
             'daftar_saksi' => 'nullable|string',
+            'dokumen_baptisan' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
         ]);
 
         DB::beginTransaction();
 
         try {
+            if ($request->hasFile('dokumen_baptisan')) {
+                $dokumenPath = $request->file('dokumen_baptisan')->store('public/baptisans/dokumen');
+                $validatedData['dokumen_baptisan'] = $dokumenPath;
+            }
+
             $anggotaJemaat = AnggotaJemaat::findOrFail($validatedData['anggota_jemaat_id']);
 
             if ($anggotaJemaat->baptisan()->exists()) {
@@ -148,7 +163,14 @@ class BaptisanController extends Controller
         ]);
        // Hapus _token dan _method dari data yang akan disimpan
         $validatedData = $request->except(['_token', '_method']);
-
+        // Hapus dokumen lama jika ada dan pengguna mengunggah dokumen baru
+    if ($request->hasFile('dokumen_baptisan')) {
+        if ($baptisan->dokumen_baptisan) {
+            Storage::delete($baptisan->dokumen_baptisan);
+        }
+        $dokumenPath = $request->file('dokumen_baptisan')->store('public/baptisans/dokumen');
+        $validatedData['dokumen_baptisan'] = $dokumenPath;
+    }
         // Update data baptisan
         $baptisan->update($validatedData);
 
@@ -163,6 +185,10 @@ class BaptisanController extends Controller
      */
     public function destroy(Baptisan $baptisan)
     {
+        if ($baptisan->dokumen_baptisan) {
+            Storage::delete($baptisan->dokumen_baptisan);
+        }
+
         $baptisan->delete();
 
         return redirect()->route('baptisans.index')->with('success', 'Data baptisan berhasil dihapus.');
