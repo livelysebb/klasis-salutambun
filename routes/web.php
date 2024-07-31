@@ -10,6 +10,7 @@ use App\Http\Controllers\NikahController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TransaksiKeuanganController;
 use App\Http\Controllers\SuratController;
+use App\Http\Controllers\PengurusController;
 Route::get('/', function () {
     return view('login.login');
 })->middleware('guest');
@@ -27,6 +28,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('nikahs', NikahController::class);
     Route::resource('transaksi_keuangans', TransaksiKeuanganController::class);
     Route::resource('surats', SuratController::class);
+    Route::resource('penguruses', PengurusController::class);
+
 });
 
 

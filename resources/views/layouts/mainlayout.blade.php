@@ -38,6 +38,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('surats.index') }}">Surat</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('penguruses.index') }}">Pengurus</a>
+                    </li>
 
                     <!-- <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

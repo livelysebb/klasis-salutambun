@@ -39,4 +39,9 @@ class AnggotaJemaat extends Model
     {
         return $this->hasMany(Nikah::class, 'pasangan_id');
     }
+
+    public function pengurus()
+    {
+        return $this->hasMany(Pengurus::class, 'anggota_jemaat_id');
+    }
 }
