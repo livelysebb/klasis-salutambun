@@ -19,47 +19,63 @@ class BaptisanController extends Controller
      */
     public function index(Request $request)
     {
+        // 1. Otorisasi
+        if (! auth()->user()->can('view baptisans')) {
+            abort(403, 'Unauthorized');
+        }
 
+        // 2. Ambil Data Jemaat untuk Dropdown
         $search = $request->query('search');
-        $jemaatId = $request->query('jemaat_id'); // Tambahkan variabel untuk filter jemaat
+        $jemaats = Jemaat::pluck('nama', 'id');
+        $jemaatId = $request->query('jemaat_id');
 
-        $jemaats = Jemaat::pluck('nama', 'id'); // Ambil data jemaat untuk dropdown
-
-        $baptisans = Baptisan::with('anggotaJemaat.jemaat') // Eager load relasi anggotaJemaat dan jemaat
-            ->when($search, function ($query, $search) {
+        // 3. Query Data Baptisan dengan Filter dan Relasi
+        $query = Baptisan::with('anggotaJemaat.jemaat')
+            ->when($request->query('search'), function ($query, $search) {
                 return $query->where('tempat_baptis', 'like', "%{$search}%")
                     ->orWhereHas('anggotaJemaat', function ($q) use ($search) {
                         $q->where('nama', 'like', "%{$search}%");
                     });
             })
-            ->when($jemaatId, function ($query, $jemaatId) { // Filter berdasarkan jemaat jika ada
-                $query->whereHas('anggotaJemaat', function ($q) use ($jemaatId) {
-                    $q->where('jemaat_id', $jemaatId);
+            ->when(auth()->user()->hasRole('admin_jemaat'), function ($query) {
+                $query->whereHas('anggotaJemaat', function ($q) {
+                    $q->where('jemaat_id', auth()->user()->jemaat_id);
                 });
             })
-            ->latest()
-            ->paginate(10);
+            ->when(auth()->user()->hasRole('admin_klasis') && $request->query('jemaat_id'), function ($query) use ($request) {
+                $query->whereHas('anggotaJemaat', function ($q) use ($request) {
+                    $q->where('jemaat_id', $request->query('jemaat_id'));
+                });
+            })
+            ->when((auth()->user()->hasRole('admin_klasis') || auth()->user()->hasRole('super_admin')) && $request->query('jemaat_id'), function ($query) use ($request) {
+                $query->whereHas('anggotaJemaat', function ($q) use ($request) {
+                    $q->where('jemaat_id', $request->query('jemaat_id'));
+                });
+            })
+            ->latest();
 
+        // 4. Paginasi
+        $baptisans = $query->paginate(10);
+
+        // 5. Hitung Umur Saat Baptis dan Tambahkan Nomor Urut
         $baptisans->getCollection()->transform(function ($baptisan, $key) use ($baptisans) {
-        $tanggalBaptis = Carbon::parse($baptisan->tanggal_baptis);
-        $tanggalLahir = Carbon::parse($baptisan->anggotaJemaat->tanggal_lahir);
+            $tanggalBaptis = Carbon::parse($baptisan->tanggal_baptis);
+            $tanggalLahir = Carbon::parse($baptisan->anggotaJemaat->tanggal_lahir);
 
-        // Format tanggal_baptis menjadi 'Y-m-d'
-        //$baptisan->tanggal_baptis = Carbon::parse($baptisan->tanggal_baptis)->format('d-m-Y');
-        //dd($baptisan->tanggal_baptis);
+            if ($tanggalBaptis->greaterThanOrEqualTo($tanggalLahir)) {
+                $umur = $tanggalLahir->diff($tanggalBaptis);
+                $baptisan->umur_saat_baptis = $umur->y . ' tahun ' ;
+            } else {
+                $baptisan->umur_saat_baptis = 'Tanggal Baptis Tidak Valid';
+            }
 
-        if ($tanggalBaptis->greaterThanOrEqualTo($tanggalLahir)) {
-            $umur = $tanggalLahir->diff($tanggalBaptis);
-            $baptisan->umur_saat_baptis = $umur->y . ' tahun ' . $umur->m . ' bulan';
-        } else {
-            $baptisan->umur_saat_baptis = 'Tanggal Baptis Tidak Valid';
-        }
+            $baptisan->nomor = ($baptisans->currentPage() - 1) * $baptisans->perPage() + $key + 1;
+            return $baptisan;
+        });
 
-        $baptisan->nomor = ($baptisans->currentPage() - 1) * $baptisans->perPage() + $key + 1;
-        return $baptisan;
-    });
+        // 6. Kembalikan View
+        return view('baptisans.index', compact('baptisans', 'search', 'jemaats', 'jemaatId'));
 
-    return view('baptisans.index', compact('baptisans', 'search','jemaats', 'jemaatId'));
     }
 
     /**
@@ -67,16 +83,29 @@ class BaptisanController extends Controller
      */
     public function create()
     {
-        // app/Http/Controllers/BaptisanController.php
+        if (! auth()->user()->can('create baptisans')) {
+            abort(403, 'Unauthorized');
+        }
 
-        $anggotaJemaats = AnggotaJemaat::doesntHave('baptisan')
-        ->with('jemaat')
-        ->orderBy('nama', 'asc') // Urutkan berdasarkan nama anggota jemaat (ascending)
-        ->get();
+        if (auth()->user()->hasRole('admin_jemaat')) {
+            // Jika admin jemaat, ambil hanya anggota jemaat dari jemaatnya sendiri yang belum memiliki data baptisan
+            $anggotaJemaats = AnggotaJemaat::where('jemaat_id', auth()->user()->jemaat_id)
+                ->doesntHave('baptisan')
+                ->with('jemaat')
+                ->orderBy('nama', 'asc')
+                ->get();
+        } else {
+            // Jika bukan admin jemaat (super admin), ambil semua anggota jemaat yang belum memiliki data baptisan
+            $anggotaJemaats = AnggotaJemaat::doesntHave('baptisan')
+                ->with('jemaat')
+                ->orderBy('nama', 'asc')
+                ->get();
+        }
 
         return view('baptisans.create', compact('anggotaJemaats'));
-
     }
+
+
 
     /**
      * Store a newly created resource in storage.

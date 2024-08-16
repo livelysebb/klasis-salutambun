@@ -17,9 +17,11 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    @can('manage jemaats')
                     <li class="nav-item">
                         <a class="nav-link" href="/jemaats">Jemaat</a>
                     </li>
+                    @endcan
                     <li class="nav-item">
                         <a class="nav-link" href="/anggota-jemaat">Anggota Jemaat</a>
                     </li>
@@ -42,6 +44,12 @@
                         <a class="nav-link" href="{{ route('penguruses.index') }}">Pengurus</a>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('users.index') }}">User</a>
+                    </li>
+
+
+
                     <!-- <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Jemaat
@@ -54,7 +62,35 @@
 
                     </li> -->
                 </ul>
-                <ul class="navbar-nav mb-2 mb-lg-0">
+                <ul class="navbar-nav ms-auto">
+                    @auth
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+                            {{ Auth::user()->name }}
+                            @if(Auth::user()->roles->first())  
+
+                                ({{ Auth::user()->roles->first()->name }})
+                            @else
+                                (Belum ada role)
+                            @endif
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ route('logout') }}"
+                                    onclick="event.preventDefault();
+                                                    document.getElementById('logout-form').submit();">
+
+                                        {{ __('Logout') }}
+                                    </a>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                        @csrf
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    @endauth
+                </ul>
+                <!-- <ul class="navbar-nav mb-2 mb-lg-0">
                     @auth
                         <li class="nav-item">
                             <form action="{{ route('logout') }}" method="POST">
@@ -67,7 +103,7 @@
                             <a class="nav-link" href="{{ route('login') }}">Login</a>
                         </li>
                     @endauth
-                </ul>
+                </ul> -->
             </div>
         </div>
     </nav>

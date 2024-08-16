@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['super_admin', 'admin_klasis', 'admin_jemaat','admin_bendahara_jemaat'])->default('admin_jemaat');
+            $table->foreignId('jemaat_id')->nullable()->constrained()->after('role');
         });
     }
 
@@ -22,8 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['super_admin', 'admin_klasis', 'admin_jemaat','admin_bendahara_jemaat'])->default('admin_jemaat');
-            $table->dropColumn('role');
+            $table->dropForeign(['jemaat_id']);
+            $table->dropColumn('jemaat_id');
         });
     }
 };

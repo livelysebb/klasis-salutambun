@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Nikah;
 use App\Models\AnggotaJemaat;
 use Illuminate\Support\Facades\DB;
+use App\Models\Jemaat;
 
 use Illuminate\Http\Request;
 
@@ -15,19 +16,47 @@ class NikahController extends Controller
      */
     public function index(Request $request)
     {
-        $nikahs = Nikah::with(['anggotaJemaat', 'pasangan']); // Eager load relasi
-
-        if ($request->has('search')) {
-            $nikahs->whereHas('anggotaJemaat', function ($query) use ($request) {
-                $query->where('nama', 'like', '%' . $request->input('search') . '%');
-            })->orWhereHas('pasangan', function ($query) use ($request) {
-                $query->where('nama', 'like', '%' . $request->input('search') . '%');
-            });
+        // 1. Otorisasi (Pastikan pengguna memiliki izin untuk melihat data nikah)
+        if (! auth()->user()->can('view nikahs')) {
+            abort(403, 'Unauthorized');
         }
 
-        $nikahs = $nikahs->paginate(10); // Pagination
+        // 2. Ambil Data Jemaat untuk Dropdown (Hanya untuk admin_klasis dan super_admin)
+        $jemaats = [];
+        if (auth()->user()->hasRole('admin_klasis') || auth()->user()->hasRole('super_admin')) {
+            $jemaats = Jemaat::pluck('nama', 'id');
+        }
 
-        return view('nikahs.index', compact('nikahs'));
+        // 3. Ambil nilai 'search' dan 'jemaat_id' dari query parameter
+        $search = $request->query('search');
+        $jemaatId = $request->query('jemaat_id');
+
+        // 4. Query Data Nikah dengan Filter, Relasi, dan Pencarian
+        $query = Nikah::with(['anggotaJemaat', 'pasangan'])
+        ->when($search, function ($query, $search) {
+            $query->whereHas('anggotaJemaat', function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%");
+            })->orWhereHas('pasangan', function ($query) use ($search) {
+                $query->where('nama', 'like', "%{$search}%");
+            });
+        })
+        ->when(auth()->user()->hasRole('admin_jemaat'), function ($query) {
+            $query->whereHas('anggotaJemaat', function ($q) {
+                $q->where('jemaat_id', auth()->user()->jemaat_id);
+            });
+        })
+        ->when(($jemaatId && (auth()->user()->hasRole('admin_klasis') || auth()->user()->hasRole('super_admin'))), function ($query) use ($jemaatId) {
+            $query->whereHas('anggotaJemaat', function ($q) use ($jemaatId) {
+                $q->where('jemaat_id', $jemaatId);
+            });
+        })
+        ->latest();
+
+        // 5. Paginasi
+        $nikahs = $query->paginate(10);
+
+        // 6. Kembalikan View
+        return view('nikahs.index', compact('nikahs', 'search', 'jemaats', 'jemaatId'));
     }
 
     /**

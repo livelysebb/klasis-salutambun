@@ -10,18 +10,34 @@
         </div>
 
         <div class="card-body">
-            {{-- Form Pencarian --}}
+            {{-- Form Filter dan Pencarian --}}
             <form action="{{ route('nikahs.index') }}" method="GET">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" name="search" placeholder="Cari pernikahan..." value="{{ request('search') }}">
-                    <button class="btn btn-outline-secondary" type="submit">Cari</button>
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" name="search" placeholder="Cari pernikahan..." value="{{ $search }}">
+                    </div>
+                    @if(auth()->user()->hasRole('admin_klasis') || auth()->user()->hasRole('super_admin'))
+                        <div class="col-md-4">
+                            <select class="form-select" name="jemaat_id">
+                                <option value="">Semua Jemaat</option>
+                                @foreach ($jemaats as $id => $nama)
+                                    <option value="{{ $id }}" {{ $id == $jemaatId ? 'selected' : '' }}>{{ $nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                    <div class="col-md-2">
+                        <button class="btn btn-outline-secondary" type="submit">Cari</button>
+                    </div>
                 </div>
             </form>
 
             {{-- Tombol Tambah Pernikahan Baru --}}
-            <div class="mt-3">
-                <a href="{{ route('nikahs.create') }}" class="btn btn-primary mb-3">Tambah Pernikahan Baru</a>
-            </div>
+            @can('create nikahs')
+                <div class="mt-3">
+                    <a href="{{ route('nikahs.create') }}" class="btn btn-primary mb-3">Tambah Data Pernikahan</a>
+                </div>
+            @endcan
 
             {{-- Daftar Pernikahan (Tabel) --}}
             <table class="table table-striped table-hover mt-3">
@@ -36,7 +52,10 @@
                         <th>Catatan Nikah</th>
                         <th>Foto Nikah</th>
                         <th>Dokumen Nikah</th>
+                        @can('edit nikah')
                         <th>Aksi</th>
+                        @endcan
+
                     </tr>
                 </thead>
                 <tbody>
@@ -65,12 +84,16 @@
                                 @endif
                             </td>
                             <td class="d-flex flex-column">
-                                <a href="{{ route('nikahs.edit', $nikah->id) }}" class="btn btn-sm btn-outline-primary mb-2">Edit</a>
-                                <form action="{{ route('nikahs.destroy', $nikah->id) }}" method="POST" style="display: inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</button>
-                                </form>
+                                @can('edit nikahs')
+                                    <a href="{{ route('nikahs.edit', $nikah->id) }}" class="btn btn-sm btn-outline-primary mb-2">Edit</a>
+                                @endcan
+                                @can('delete nikahs')
+                                    <form action="{{ route('nikahs.destroy', $nikah->id) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</button>
+                                    </form>
+                                @endcan
                             </td>
                         </tr>
                     @endforeach

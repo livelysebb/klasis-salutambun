@@ -44,4 +44,8 @@ class AnggotaJemaat extends Model
     {
         return $this->hasMany(Pengurus::class, 'anggota_jemaat_id');
     }
+
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+    ];
 }

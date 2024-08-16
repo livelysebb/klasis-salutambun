@@ -17,7 +17,7 @@
             @enderror
         </div>
 
-        <div class="mb-3">
+        <!-- <div class="mb-3">
             <label for="jemaat_id" class="form-label">Jemaat</label>
             <select class="form-select" id="jemaat_id" name="jemaat_id" required>
                 <option value="">Pilih Jemaat</option>
@@ -30,6 +30,23 @@
             @error('jemaat_id')
                 <div class="alert alert-danger">{{ $message }}</div>
             @enderror
+        </div> -->
+        <div class="mb-3">
+            <label for="jemaat_id" class="form-label">Jemaat</label>
+            @if (auth()->user()->hasRole('admin_jemaat'))
+                <input type="text" class="form-control" id="jemaat_id" value="{{ $jemaats->first()->nama }}" disabled>
+                <input type="hidden" name="jemaat_id" value="{{ $jemaats->first()->id }}">
+            @else
+                <select class="form-select @error('jemaat_id') is-invalid @enderror" id="jemaat_id" name="jemaat_id" required>
+                    <option value="">Pilih Jemaat</option>
+                    @foreach ($jemaats as $jemaat) <div class="alert alert-danger">{{ $message }}</div>
+                        <option value="{{ $jemaat->id }}" {{ old('jemaat_id') == $jemaat->id ? 'selected' : '' }}>{{ $jemaat->nama }}</option>
+                    @endforeach
+                </select>
+                @error('jemaat_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            @endif
         </div>
 
         <div class="mb-3">

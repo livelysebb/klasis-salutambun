@@ -12,26 +12,30 @@
                 </div>
                 <div class="card-body">
                     {{-- Form Filter dan Pencarian --}}
-                        <form action="{{ route('baptisans.index') }}" method="GET">
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" name="search" placeholder="Cari baptisan..." value="{{ $search }}">
+                    <form action="{{ route('baptisans.index') }}" method="GET">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" name="search" placeholder="Cari baptisan..." value="{{ $search }}">
 
-                                {{-- Dropdown Pemilihan Jemaat --}}
-                                <select class="form-select" name="jemaat_id">
-                                    <option value="">Semua Jemaat</option>
-                                    @foreach ($jemaats as $id => $nama)
-                                        <option value="{{ $id }}" {{ $id == $jemaatId ? 'selected' : '' }}>{{ $nama }}</option>
-                                    @endforeach
-                                </select>
+                            {{-- Dropdown Pemilihan Jemaat (Hanya untuk super_admin dan admin_klasis) --}}
+                            @if(Auth::user()->hasRole('super_admin') || Auth::user()->hasRole('admin_klasis'))
+                            <select class="form-select" name="jemaat_id">
+                                <option value="">Semua Jemaat</option>
+                                @foreach ($jemaats as $id => $nama)
+                                    <option value="{{ $id }}" {{ $id == $jemaatId ? 'selected' : '' }}>{{ $nama }}</option>
+                                @endforeach
+                            </select>
+                            @endif
 
-                                <button class="btn btn-outline-secondary" type="submit">Cari</button>
-                            </div>
-                        </form>
+                            <button class="btn btn-outline-secondary" type="submit">Cari</button>
+                        </div>
+                    </form>
 
-                    {{-- Tombol Tambah Data Baptisan --}}
+                    @can('create baptisans')
                     <div class="mt-3">
                         <a href="{{ route('baptisans.create') }}" class="btn btn-primary mb-3">Tambah Data Baptisan</a>
                     </div>
+                    @endcan
+
 
                     {{-- Daftar Baptisan (Tabel) --}}
                     <table class="table table-striped table-hover mt-3">
@@ -44,11 +48,15 @@
                                 <th>Pendeta Baptis</th>
                                 <th>Umur Saat Baptis</th>
                                 <th>Jenis Kelamin</th>
-                                <th>Nama Ayah</th>
-                                <th>Nama Ibu</th>
-                                <th>Daftar Saksi</th>
-                                <th>Aksi</th>
+                                <!-- <th>Nama Ayah</th> -->
+                                <!-- <th>Nama Ibu</th> -->
+                                <!-- <th>Daftar Saksi</th> -->
                                 <th>Dokumen</th>
+                                <th>Jemaat</th>
+                                @can('edit baptisans')
+                                <th>Aksi</th>
+                                @endcan
+
                             </tr>
                         </thead>
                         <tbody>
@@ -62,9 +70,10 @@
                                     <td>{{ $baptisan->pendeta_baptis }}</td>
                                     <td>{{ $baptisan->umur_saat_baptis }}</td>
                                     <td>{{ $baptisan->anggotaJemaat->jenis_kelamin }}</td>
-                                    <td>{{ $baptisan->anggotaJemaat->nama_ayah }}</td>
-                                    <td>{{ $baptisan->anggotaJemaat->nama_ibu }}</td>
-                                    <td>{{ $baptisan->daftar_saksi }}</td>
+                                    <!-- <td>{{ $baptisan->anggotaJemaat->nama_ayah }}</td> -->
+                                    <!-- <td>{{ $baptisan->anggotaJemaat->nama_ibu }}</td> -->
+                                    <!-- <td>{{ $baptisan->daftar_saksi }}</td> -->
+
                                     <td>
                                         @if ($baptisan->dokumen_baptisan)
                                             <a href="{{ asset('storage/' . $baptisan->dokumen_baptisan) }}" class="btn btn-sm btn-outline-secondary" download>Unduh Dokumen</a>
@@ -72,13 +81,21 @@
                                             Tidak ada dokumen
                                         @endif
                                     </td>
+
+                                    <td>{{ $baptisan->anggotaJemaat->jemaat->nama }}</td>
+
                                     <td class="d-flex flex-column">
+                                        @can('edit baptisans')
                                         <a href="{{ route('baptisans.edit', $baptisan->id) }}" class="btn btn-sm btn-outline-primary mb-2">Edit</a>
+                                        @endcan
+                                        @can('delete baptisans')
                                         <form action="{{ route('baptisans.destroy', $baptisan->id) }}" method="POST" style="display: inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</button>
                                         </form>
+                                        @endcan
+
                                     </td>
                                 </tr>
                             @endforeach

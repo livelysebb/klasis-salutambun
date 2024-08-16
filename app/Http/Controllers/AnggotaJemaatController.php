@@ -13,25 +13,42 @@ class AnggotaJemaatController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
+        $jemaatId = $request->query('jemaat_id');
 
         $anggotaJemaat = AnggotaJemaat::with('jemaat')
             ->when($search, function ($query, $search) {
                 $query->where('nama', 'like', "%{$search}%");
             })
-            ->latest() // Mengurutkan berdasarkan data terbaru
+            ->when(auth()->user()->hasRole('admin_jemaat'), function ($query) {
+                $query->where('jemaat_id', auth()->user()->jemaat_id);
+            })
+            // Tambahkan kondisi untuk super admin
+            ->when(auth()->user()->hasRole('super_admin') && $jemaatId, function ($query) use ($jemaatId) {
+                $query->where('jemaat_id', $jemaatId);
+            })
+            ->latest()
             ->paginate(10);
 
-            $anggotaJemaat->getCollection()->transform(function ($item, $key) use ($anggotaJemaat) {
-                $item->nomor = ($anggotaJemaat->currentPage() - 1) * $anggotaJemaat->perPage() + $key + 1;
-                return $item;
-            });
+        $anggotaJemaat->getCollection()->transform(function ($item, $key) use ($anggotaJemaat) {
+            $item->nomor = ($anggotaJemaat->currentPage() - 1) * $anggotaJemaat->perPage() + $key + 1;
+            return $item;
+        });
 
-        return view('anggota_jemaat.index', compact('anggotaJemaat', 'search'));
+        $jemaats = Jemaat::pluck('nama', 'id');
+
+        return view('anggota_jemaat.index', compact('anggotaJemaat', 'search', 'jemaats', 'jemaatId'));
     }
 
     public function create()
     {
-        $jemaats = Jemaat::all();
+        if (auth()->user()->hasRole('admin_jemaat')) {
+            // Jika admin jemaat, ambil hanya jemaat yang sesuai dengan jemaat_id pengguna
+            $jemaats = Jemaat::where('id', auth()->user()->jemaat_id)->get();
+        } else {
+            // Jika bukan admin jemaat, ambil semua jemaat
+            $jemaats = Jemaat::all();
+        }
+
         return view('anggota_jemaat.create', compact('jemaats'));
     }
 

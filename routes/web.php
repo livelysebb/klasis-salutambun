@@ -11,17 +11,22 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TransaksiKeuanganController;
 use App\Http\Controllers\SuratController;
 use App\Http\Controllers\PengurusController;
+use App\Http\Controllers\UserController ;
+
+
 Route::get('/', function () {
     return view('login.login');
 })->middleware('guest');
 
 
 
-
-// Bungkus semua route yang memerlukan autentikasi dalam grup middleware 'auth'
 Route::middleware(['auth'])->group(function () {
+    Route::middleware(['role:super_admin|admin_klasis'])->group(function () {
+        Route::resource('jemaats', JemaatController::class);
+
+    });
     Route::get('/transaksi_keuangans/laporan-pdf', [TransaksiKeuanganController::class, 'laporanPdf'])->name('transaksi_keuangans.laporan_pdf');
-    Route::resource('jemaats', JemaatController::class);
+    // Route::resource('jemaats', JemaatController::class);
     Route::resource('anggota-jemaat', AnggotaJemaatController::class);
     Route::resource('baptisans', BaptisanController::class);
     Route::resource('sidis', SidiController::class);
@@ -29,6 +34,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('transaksi_keuangans', TransaksiKeuanganController::class);
     Route::resource('surats', SuratController::class);
     Route::resource('penguruses', PengurusController::class);
+    Route::resource('users', UserController::class);
 
 });
 

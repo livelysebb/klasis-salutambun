@@ -18,7 +18,7 @@
             @enderror
         </div>
 
-        <div class="mb-3">
+        <!-- <div class="mb-3">
             <label for="jemaat_id" class="form-label">Jemaat</label>
             <select class="form-select" id="jemaat_id" name="jemaat_id" required>
                 @foreach ($jemaats as $jemaat)
@@ -30,6 +30,25 @@
             @error('jemaat_id')
                 <div class="alert alert-danger">{{ $message }}</div>
             @enderror
+        </div> -->
+
+        <div class="mb-3">
+            <label for="jemaat_id" class="form-label">Jemaat</label>
+            @if (auth()->user()->hasRole('admin_jemaat'))
+                <input type="text" class="form-control" id="jemaat_id" value="{{ $anggotaJemaat->jemaat->nama }}" disabled>
+                <input type="hidden" name="jemaat_id" value="{{ $anggotaJemaat->jemaat_id }}">
+            @else
+                <select class="form-select" id="jemaat_id" name="jemaat_id" required>
+                    @foreach ($jemaats as $jemaat)
+                        <option value="{{ $jemaat->id }}" {{ $jemaat->id == $anggotaJemaat->jemaat_id ? 'selected' : '' }}>
+                            {{ $jemaat->nama }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('jemaat_id')
+                    <div class="alert alert-danger">{{ $message }}</div>
+                @enderror
+            @endif
         </div>
 
         <div class="mb-3">
@@ -50,14 +69,22 @@
                 <div class="alert alert-danger">{{ $message }}</div>
             @enderror
         </div>
-
         <div class="mb-3">
+            <label for="tanggal_lahir" class="form-label">Tanggal Lahir</label>
+            <input type="date" class="form-control" id="tanggal_lahir" name="tanggal_lahir" value="{{ old('tanggal_lahir', $anggotaJemaat->tanggal_lahir->format('Y-m-d')) }}">
+            @error('tanggal_lahir')
+                <div class="alert alert-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
+
+        <!-- <div class="mb-3">
             <label for="tanggal_lahir" class="form-label">Tanggal Lahir</label>
             <input type="date" class="form-control" id="tanggal_lahir" name="tanggal_lahir" value="{{ $anggotaJemaat->tanggal_lahir }}">
             @error('tanggal_lahir')
                 <div class="alert alert-danger">{{ $message }}</div>
             @enderror
-        </div>
+        </div> -->
 
         <div class="mb-3">
             <label for="nama_ayah" class="form-label">Nama Ayah</label>
