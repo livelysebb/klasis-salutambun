@@ -16,25 +16,44 @@ class SidiController extends Controller
      */
     public function index(Request $request)
     {
+        // 1. Otorisasi
+        if (! auth()->user()->can('view sidis')) {
+            abort(403, 'Unauthorized');
+        }
+
+        // 2. Ambil Data Jemaat untuk Dropdown (Hanya untuk admin_klasis dan super_admin)
+        $jemaats = [];
+        if (auth()->user()->hasRole('admin_klasis') || auth()->user()->hasRole('super_admin')) {
+            $jemaats = Jemaat::pluck('nama', 'id');
+        }
+
+        // 3. Ambil nilai 'search' dan 'jemaat_id' dari query parameter
         $search = $request->query('search');
         $jemaatId = $request->query('jemaat_id');
 
-        $jemaats = Jemaat::pluck('nama', 'id');
-
-        $query = Sidi::with('anggotaJemaat.jemaat') // Eager load relasi anggotaJemaat dan jemaat
+        // 4. Query Data Sidi dengan Filter, Relasi, dan Pencarian
+        $query = Sidi::with('anggotaJemaat.jemaat')
             ->when($search, function ($query, $search) {
                 $query->whereHas('anggotaJemaat', function ($q) use ($search) {
                     $q->where('nama', 'like', "%{$search}%");
                 });
             })
-            ->when($jemaatId, function ($query, $jemaatId) {
+            ->when(auth()->user()->hasRole('admin_jemaat'), function ($query) {
+                $query->whereHas('anggotaJemaat', function ($q) {
+                    $q->where('jemaat_id', auth()->user()->jemaat_id);
+                });
+            })
+            ->when(($jemaatId && (auth()->user()->hasRole('admin_klasis') || auth()->user()->hasRole('super_admin'))), function ($query) use ($jemaatId) {
                 $query->whereHas('anggotaJemaat', function ($q) use ($jemaatId) {
                     $q->where('jemaat_id', $jemaatId);
                 });
-            });
+            })
+            ->latest();
 
-        $sidis = $query->latest()->paginate(10);
+        // 5. Paginasi
+        $sidis = $query->paginate(10);
 
+        // 6. Kembalikan View
         return view('sidis.index', compact('sidis', 'search', 'jemaats', 'jemaatId'));
     }
 

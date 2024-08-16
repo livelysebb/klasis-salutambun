@@ -41,7 +41,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $deleteBaptisansPermission = Permission::findOrCreate('delete baptisans');
 
 
-        $manageSidisPermission = Permission::findOrCreate('manage sidis');
+        $viewSidisPermission = Permission::findOrCreate('view sidis');
         $createSidisPermission = Permission::findOrCreate('create sidis');
         $editSidisPermission = Permission::findOrCreate('edit sidis');
         $deleteSidisPermission = Permission::findOrCreate('delete sidis');
@@ -74,6 +74,7 @@ class RolesAndPermissionsSeeder extends Seeder
             $viewAnggotaJemaatPermission,
             $viewBaptisansPermission,
             $viewNikahsPermission,
+            $viewSidisPermission,
 
         ]);
         $adminJemaatRole->givePermissionTo([
@@ -88,7 +89,11 @@ class RolesAndPermissionsSeeder extends Seeder
             $viewNikahsPermission,
             $createNikahsPermission,
             $editNikahsPermission,
-            $deleteNikahsPermission
+            $deleteNikahsPermission,
+            $viewSidisPermission,
+            $createSidisPermission,
+            $editSidisPermission,
+            $deleteSidisPermission
         ]);
 
         // Anda bisa menyesuaikan izin untuk admin_bendahara_jemaat sesuai kebutuhan
