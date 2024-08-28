@@ -51,6 +51,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $editNikahsPermission = Permission::findOrCreate('edit nikahs');
         $deleteNikahsPermission = Permission::findOrCreate('delete nikahs');
 
+        $manageKeuanganPermission = Permission::findOrCreate('manage keuangan');
         $viewKeuanganPermission = Permission::findOrCreate('view keuangan');
         $createKeuanganPermission = Permission::findOrCreate('create keuangan');
         $editKeuanganPermission = Permission::findOrCreate('edit keuangan');
@@ -76,6 +77,7 @@ class RolesAndPermissionsSeeder extends Seeder
             $viewBaptisansPermission,
             $viewNikahsPermission,
             $viewSidisPermission,
+            $manageKeuanganPermission
 
 
         ]);
@@ -100,6 +102,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // Anda bisa menyesuaikan izin untuk admin_bendahara_jemaat sesuai kebutuhan
         $adminBendaharaJemaatRole->givePermissionTo([
+            $manageKeuanganPermission,
             $viewKeuanganPermission,
             $createKeuanganPermission,
             $editKeuanganPermission,

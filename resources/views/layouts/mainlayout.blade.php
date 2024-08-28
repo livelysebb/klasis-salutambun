@@ -35,13 +35,13 @@
                         <a class="nav-link" href="/sidis">Sidi</a>
                     </li>
 
-                    @unlessrole('admin_jemaat')
-                        @can('view keuangan')
+
+                        @can('manage keuangan')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('transaksi_keuangans.index') }}">Transaksi Keuangan</a>
                             </li>
                         @endcan
-                    @endunlessrole
+
 
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('surats.index') }}">Surat</a>
