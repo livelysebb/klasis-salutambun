@@ -51,10 +51,10 @@ class RolesAndPermissionsSeeder extends Seeder
         $editNikahsPermission = Permission::findOrCreate('edit nikahs');
         $deleteNikahsPermission = Permission::findOrCreate('delete nikahs');
 
-        $manageTransaksiKeuanganPermission = Permission::findOrCreate('manage transaksi keuangan');
-        $createTransaksiKeuanganPermission = Permission::findOrCreate('create transaksi keuangan');
-        $editTransaksiKeuanganPermission = Permission::findOrCreate('edit transaksi keuangan');
-        $deleteTransaksiKeuanganPermission = Permission::findOrCreate('delete transaksi keuangan');
+        $viewKeuanganPermission = Permission::findOrCreate('view keuangan');
+        $createKeuanganPermission = Permission::findOrCreate('create keuangan');
+        $editKeuanganPermission = Permission::findOrCreate('edit keuangan');
+        $deleteKeuanganPermission = Permission::findOrCreate('delete keuangan');
 
         $manageSuratsPermission = Permission::findOrCreate('manage surats');
         $createSuratsPermission = Permission::findOrCreate('create surats');
@@ -70,11 +70,13 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // Memberikan izin ke roles
         $superAdminRole->givePermissionTo(Permission::all()); // Super admin memiliki semua izin
+
         $adminKlasisRole->givePermissionTo([
             $viewAnggotaJemaatPermission,
             $viewBaptisansPermission,
             $viewNikahsPermission,
             $viewSidisPermission,
+
 
         ]);
         $adminJemaatRole->givePermissionTo([
@@ -93,12 +95,15 @@ class RolesAndPermissionsSeeder extends Seeder
             $viewSidisPermission,
             $createSidisPermission,
             $editSidisPermission,
-            $deleteSidisPermission
+            $deleteSidisPermission,
         ]);
 
         // Anda bisa menyesuaikan izin untuk admin_bendahara_jemaat sesuai kebutuhan
         $adminBendaharaJemaatRole->givePermissionTo([
-            $manageTransaksiKeuanganPermission,
+            $viewKeuanganPermission,
+            $createKeuanganPermission,
+            $editKeuanganPermission,
+            $deleteKeuanganPermission,
             // ... izin lainnya yang relevan ...
         ]);
     }

@@ -62,10 +62,25 @@ class SidiController extends Controller
      */
     public function create()
     {
-        $anggotaJemaats = AnggotaJemaat::doesntHave('sidi')
-        ->with('jemaat')
-        ->orderBy('nama', 'asc') // Urutkan berdasarkan nama anggota jemaat (A-Z)
-        ->get();
+        // Cek apakah pengguna memiliki izin untuk membuat sidi
+        if (!auth()->user()->can('create sidis')) {
+            abort(403, 'Unauthorized'); // Jika tidak memiliki izin, tampilkan error 403
+        }
+
+        if (auth()->user()->hasRole('admin_jemaat')) {
+            // Jika admin jemaat, ambil hanya anggota jemaat dari jemaatnya sendiri yang belum memiliki data sidi
+            $anggotaJemaats = AnggotaJemaat::where('jemaat_id', auth()->user()->jemaat_id)
+                ->doesntHave('sidi')
+                ->with('jemaat')
+                ->orderBy('nama', 'asc')
+                ->get();
+        } else {
+            // Jika bukan admin jemaat (misalnya super admin), ambil semua anggota jemaat yang belum memiliki data sidi
+            $anggotaJemaats = AnggotaJemaat::doesntHave('sidi')
+                ->with('jemaat')
+                ->orderBy('nama', 'asc')
+                ->get();
+        }
 
         return view('sidis.create', compact('anggotaJemaats'));
     }

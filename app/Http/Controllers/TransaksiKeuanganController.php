@@ -20,6 +20,11 @@ class TransaksiKeuanganController extends Controller
 
         $jemaats = Jemaat::pluck('nama', 'id');
 
+        // Jika admin bendahara jemaat, filter berdasarkan jemaat yang dikelola
+        if (auth()->user()->hasRole('admin_bendahara_jemaat')) {
+            $jemaatId = auth()->user()->jemaat_id; // Asumsikan Anda memiliki kolom 'jemaat_id' di tabel users untuk menyimpan jemaat yang dikelola oleh admin bendahara
+        }
+
         $query = TransaksiKeuangan::with('jemaat')
             ->when($search, function ($query, $search) {
                 $query->where('keterangan', 'like', "%{$search}%");
